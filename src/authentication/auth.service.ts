@@ -3,9 +3,9 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma.service';
 import { UsersService } from 'src/users/users.service';
 import { LoginDto } from './dto/login-user.dto';
-import * as bcrypt from 'bcrypt';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { Users } from 'src/users/users.model';
+import * as bcrypt from 'bcrypt';
 @Injectable()
 export class AuthService {
   constructor(
@@ -50,7 +50,9 @@ export class AuthService {
     const user = await this.usersService.createUser(createUsers);
 
     return {
-      token: this.jwtService.sign({ email: user.email }),
+      token: this.jwtService.sign({
+        email: user.email,
+      }),
     };
   }
 }
