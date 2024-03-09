@@ -1,13 +1,12 @@
-import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, Res } from '@nestjs/common';
 import { UserFeedbacksService } from './userFeedbacks.service';
 import { Request, Response, response } from 'express';
 
-@Controller('/userFeedbacks')
+@Controller('userFeedbacks')
 export class UserFeedbacksController {
   constructor(private readonly userFeedbacksService: UserFeedbacksService) {}
 
-  // @UseGuards('jwtGurd')
-  @Get('/getFeedbacks')
+  @Get()
   async getAllUserFeedbacks(
     @Req() request: Request,
     @Res() response: Response,
