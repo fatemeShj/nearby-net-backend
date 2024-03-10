@@ -1,12 +1,24 @@
 import { PrismaService } from 'src/prisma.service';
 import { Users } from './users.model';
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @Inject('CACHE_MANAGER') private cacheManager: Cache,
+    private prisma: PrismaService,
+  ) {}
+
   async getAllUser(): Promise<Users[]> {
-    return this.prisma.users.findMany();
+    const cachedData: Users[] = await this.cacheManager.get('users');
+    if (cachedData) {
+      return cachedData;
+    }
+
+    const users = await this.prisma.users.findMany();
+    await this.cacheManager.set('users', users);
+    return users;
   }
 
   async createUser(data: Users): Promise<Users> {

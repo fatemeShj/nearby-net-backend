@@ -1,17 +1,28 @@
 import { PrismaService } from 'src/prisma.service';
 import { UserFeedbacks } from './userFeedbacks.model';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { FeedbackUserDto } from './dto/feedback-user.dto';
-
+import { Cache } from 'cache-manager';
 @Injectable()
 export class UserFeedbacksService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @Inject('CACHE_MANAGER') private cacheManager: Cache,
+    private prisma: PrismaService,
+  ) {}
   async getAllUserFeedback(): Promise<UserFeedbacks[]> {
-    return this.prisma.userFeedbacks.findMany({
+    const cachedData: UserFeedbacks[] =
+      await this.cacheManager.get('userFeedbacks');
+    if (cachedData) {
+      return cachedData;
+    }
+    const userFeedbacks = await this.prisma.userFeedbacks.findMany({
       where: {
         isActive: true,
       },
     });
+
+    await this.cacheManager.set('userFeedbacks', userFeedbacks);
+    return userFeedbacks;
   }
 
   async createUserFeedback(feedbackUserDto: FeedbackUserDto): Promise<any> {
