@@ -55,4 +55,9 @@ export class AuthService {
       }),
     };
   }
+
+  async getUsers(): Promise<any> {
+    const users = await this.prismaService.users.findMany({});
+    return users;
+  }
 }

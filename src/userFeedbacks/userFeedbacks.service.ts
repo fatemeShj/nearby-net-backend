@@ -1,6 +1,7 @@
 import { PrismaService } from 'src/prisma.service';
 import { UserFeedbacks } from './userFeedbacks.model';
 import { Injectable } from '@nestjs/common';
+import { FeedbackUserDto } from './dto/feedback-user.dto';
 
 @Injectable()
 export class UserFeedbacksService {
@@ -13,13 +14,13 @@ export class UserFeedbacksService {
     });
   }
 
-  async createUserFeedback(data: UserFeedbacks): Promise<UserFeedbacks> {
+  async createUserFeedback(feedbackUserDto: FeedbackUserDto): Promise<any> {
     // Find existing records matching the provided data
     const existing = await this.prisma.userFeedbacks.findMany({
       where: {
         isActive: true,
-        sourceUserId: data.sourceUserId,
-        targetUserId: data.targetUserId,
+        sourceUserId: feedbackUserDto.sourceUserId,
+        targetUserId: feedbackUserDto.targetUserId,
       },
     });
 
@@ -28,16 +29,27 @@ export class UserFeedbacksService {
       // Update existing records
       await this.prisma.userFeedbacks.updateMany({
         where: {
-          sourceUserId: data.sourceUserId,
-          targetUserId: data.targetUserId,
+          sourceUserId: feedbackUserDto.sourceUserId,
+          targetUserId: feedbackUserDto.targetUserId,
         },
         data: {
           isActive: false,
         },
       });
     }
-    return this.prisma.userFeedbacks.create({
-      data,
+
+    // Create new user feedback
+    const createUserFeedbacks = {
+      sourceUserId: feedbackUserDto.sourceUserId,
+      targetUserId: feedbackUserDto.targetUserId,
+      type: feedbackUserDto.type,
+      isActive: feedbackUserDto.isActive,
+    };
+
+    const feedback = await this.prisma.userFeedbacks.create({
+      data: createUserFeedbacks,
     });
+
+    return feedback;
   }
 }
